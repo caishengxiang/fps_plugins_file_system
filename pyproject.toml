@@ -1,0 +1,51 @@
+[build-system]
+requires = [
+    "hatchling>=1.9.0",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "fps-file-server"
+dynamic = [
+    "version",
+]
+description = "A plugin demo for FPS"
+readme = "README.md"
+license = ""
+requires-python = ">=3.7"
+authors = [
+    { name = "Adrien DELSALLE", email = "adrien.delsalle@quantstack.net" },
+]
+keywords = [
+    "fastapi",
+    "pluggy",
+    "plugins",
+    "server",
+]
+dependencies = [
+    "fps",
+    "fps-uvicorn",
+]
+
+[project.scripts]
+helloworld = "fps_uvicorn.cli:app"
+
+[project.entry-points.fps_config]
+fps_file_server_config = "fps_file_server.config"
+
+[project.entry-points.fps_exception]
+fps_file_server_exception = "fps_file_server.exceptions"
+
+[project.entry-points.fps_router]
+fps_file_server_router = "fps_file_server.routes"
+
+[project.urls]
+Homepage = "https://github.com/adriendelsalle/fps"
+
+[tool.hatch.version]
+path = "fps_file_server/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/fps_file_server",
+]
