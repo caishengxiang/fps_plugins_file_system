@@ -25,6 +25,7 @@ keywords = [
 dependencies = [
     "fps",
     "fps-uvicorn",
+    "psutil"
 ]
 
 [project.scripts]
