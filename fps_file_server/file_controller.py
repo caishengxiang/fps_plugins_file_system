@@ -9,10 +9,11 @@ from fps_file_server.common.aio_file_tools import AioFileTool
 from fps_file_server.exceptions import FileServerError as Error
 from fps_file_server.common.file_tools import root_path_change, exists, check_file_name_length_available, \
     path_legal_verification, is_writable, get_mimetype, get_format, check_upload_file, get_new_untitled_name, \
-    get_free_space_mb
+    get_free_space_mb, get_path_size
 from fps_file_server.common.utils import get_new_file_name
 from fps_file_server.config import Config
 from fps_file_server.common.mine_types import MINE_TYPES
+from fps_file_server.common.notebook_template import UNTITLED_NOTEBOOK
 
 
 class FileObjController:
@@ -65,6 +66,10 @@ class FileObjController:
             raise Error('文件名称最长64个字符')
         return new_path, new_name
 
+    async def get_path_size(self, path):
+        _path = self._init_path(path)
+        await run_in_threadpool(get_path_size, _path)
+
     async def create_folder(self, path, paste_type='duplicate'):
         """创建目录"""
         path = path_legal_verification(path)
@@ -80,14 +85,14 @@ class FileObjController:
 
         pathlib.Path(_new_path).mkdir(parents=True, exist_ok=True)  # 创建目录
         await self.aio_tool.chmod777(_new_path)
-        info = await self.file_contents(new_path, not_get_content=True)
+        info = await self.file_contents(new_path, get_content=False)
         return info
 
-    async def file_contents(self, path, not_get_content=False, init_path=True):
+    async def file_contents(self, path, get_content=True, init_path=True):
         """
         预览文件内容 信息
         :param path:
-        :param not_get_content: 不获取内容
+        :param get_content: 获取内容
         :param init_path: 是否 转换真实路径
         :return:
         """
@@ -116,7 +121,7 @@ class FileObjController:
             if check_upload_file(file_name):
                 is_upload = 1
 
-            if not not_get_content:  # 展示内容
+            if get_content:  # 展示内容
                 content = await self.aio_tool.get_file_content(_path, _format, size)
 
         data = {
@@ -151,12 +156,55 @@ class FileObjController:
 
         if 4 * 1024 * 1024 > get_free_space_mb(self.ROOT_PATH):
             raise Error('剩余空间不足')
-        async with await anyio.open_file(_new_path, 'w') as f:
-            await f.flush()
-            await run_in_threadpool(os.fsync, f._fp.fileno())
+        await self.aio_tool.write_file(_new_path)
+        await self.aio_tool.chmod777(_new_path)
+        return await self.file_contents(new_path, get_content=False)
+
+    async def add_notebook(self, parent_path):
+        """
+        新建 空notebook
+        :param parent_path: 目录
+        :return:
+        """
+        parent_path = path_legal_verification(parent_path)
+        _path = self._init_path(parent_path, is_exists=True, isdir=True)
+        file_name = Config.UNTITLED_NAME + '.ipynb'
+        _new_path = os.path.join(_path, file_name)
+        while exists(_new_path):
+            file_name = get_new_untitled_name(file_name)
+            _new_path = os.path.join(_path, file_name)
+        new_path = os.path.join(parent_path, file_name)
+
+        if 4 * 1024 * 1024 > get_free_space_mb(self.ROOT_PATH):
+            raise Error('剩余空间不足')
+        await self.aio_tool.write_file(_new_path, UNTITLED_NOTEBOOK)
+        await self.aio_tool.chmod777(_new_path)
+        return await self.file_contents(new_path, get_content=False)
+
+    async def add_folder(self, parent_path):
+        """
+        新建 空文件
+        :param parent_path: 目录
+        :return:
+        """
+        parent_path = path_legal_verification(parent_path)
+        _path = self._init_path(parent_path, is_exists=True, isdir=True)
+        file_name = Config.UNTITLED_NAME
+        _new_path = os.path.join(_path, file_name)
+        while exists(_new_path):
+            file_name = get_new_untitled_name(file_name)
+            _new_path = os.path.join(_path, file_name)
+        new_path = os.path.join(parent_path, file_name)
+
+        if 4 * 1024 * 1024 > get_free_space_mb(self.ROOT_PATH):
+            raise Error('剩余空间不足')
+        try:
+            await self.aio_tool.mkdir(_new_path)
+        except:
+            raise Error("创建文件夹失败：{}".format(str(parent_path)))
 
         await self.aio_tool.chmod777(_new_path)
-        return await self.file_contents(new_path, not_get_content=True)
+        return await self.file_contents(new_path, get_content=False)
 
     def _preview_all_csv(self, path, max_column=2000, max_row=1000, max_size=1024 * 1024 * 10, sep=','):
         """打包查询"""
@@ -208,6 +256,5 @@ if __name__ == '__main__':
     import anyio
 
     controller = FileObjController('/home/xiang/workproject/fps_plugins_file_system/fps_file_server')
-    # anyio.run(controller.add, '/')
-    a, b, c = anyio.run(controller.preview_all_csv, '/x.csv')
-    print(a, b, c)
+    # a, b, c = anyio.run(controller.preview_all_csv, '/x.csv')
+    # print(a, b, c)

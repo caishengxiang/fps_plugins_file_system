@@ -26,8 +26,6 @@ class AioFileTool:
 
     async def copy_file(self, path, new_path):
         await run_in_threadpool(copyfile, path, new_path)
-
-        # parent_path = os.path.dirname(new_path)
         parent_path = anyio.Path(new_path).parent
         await self.fsync_dir(parent_path)
 
@@ -85,9 +83,13 @@ class AioFileTool:
     async def read_file(self, path, encoding='utf-8'):
         return await anyio.Path(path).read_text(encoding=encoding)
 
-    async def write_file(self, path, data, encoding='utf-8'):
-        await anyio.Path(path).write_text(data, encoding=encoding)
-
+    async def write_file(self, path, data=None, encoding='utf-8'):
+        # await anyio.Path(path).write_text(data, encoding=encoding)
+        async with await anyio.open_file(path, 'w') as f:
+            if data is not None:
+                await f.write(data)
+            await f.flush()
+            await run_in_threadpool(os.fsync, f._fp.fileno())
     async def mkdir(self, path):
         await anyio.Path(path).mkdir(parents=True, exist_ok=True)
 
@@ -112,4 +114,4 @@ if __name__ == '__main__':
     # print(anyio.run(aio_file_tool.move_dir, './xxx', './yyy'))
     # print(anyio.run(aio_file_tool.get_file_content, './file_obj_controller.py', 'json'))
     # print(anyio.run(aio_file_tool.mkdir, './xxz/xx'))
-    print(anyio.run(aio_file_tool.write_file, './fps.log', 'xxx'))
+    # print(anyio.run(aio_file_tool.write_file, './fps.log', 'xxx'))
