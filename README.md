@@ -1,9 +1,12 @@
 # 本地调试
-#pip install toml
-#pip install fps
-#pip install fps-uvicorn
+pip install toml
+
+pip install fps
+
+pip install fps-uvicorn
 
 cd fps_file_server
+
 pip install -e .
 
 # 启动
