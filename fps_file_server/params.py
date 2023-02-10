@@ -1,11 +1,13 @@
 # -*-coding:utf-8-*-
 from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Union, Optional
 
 
 class CheckSameParam(BaseModel):
     parent_path: str = Field(..., description='相对父路径')
     name: str = Field(..., description='文件（夹）名')
+
 
 class FileListParam(BaseModel):
     parent_path: str = Field(..., description='相对父路径')
@@ -72,4 +74,4 @@ class FormatEnum(str, Enum):
 class UpdateParam(BaseModel):
     path: str = Field(..., description='相对路径')
     format: str = Field(FormatEnum, description='内容格式 text/json')
-    content: [str, dict] = Field(..., description='文件内容')
+    content: Union[str, dict] = Field(..., description='文件内容')

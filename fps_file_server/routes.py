@@ -44,67 +44,67 @@ async def add(param: AddParam):
 async def add_notebook(param: AddParam):
     controller = FileObjController(Config.root_path)
     file_info = await controller.add(param.parent_path)
-raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/add-folder", methods=['GET', "POST"])
 async def add_folder(param: AddParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/delete", methods=['GET', "POST"])
 async def delete(param: DeleteParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/delete-folder", methods=['GET', "POST"])
 async def delete_folder(param: DeleteParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/move", methods=['GET', "POST"])
 async def move(param: MoveParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/unzip", methods=['GET', "POST"])
 async def unzip(param: UnzipParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/rename", methods=['GET', "POST"])
 async def rename(param: RenameParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/rename-folder", methods=['GET', "POST"])
 async def rename_folder(param: RenameParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/create-folder", methods=['GET', "POST"])
 async def create_folder(param: CreateFolderParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/create-folders", methods=['GET', "POST"])
 async def create_folders(param: CreateFoldersParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/preview-csv", methods=['GET', "POST"])
 async def preview_csv(param: PreviewCsvParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/preview-image", methods=['GET', "POST"])
 async def preview_image(param: PreviewImageParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/update", methods=['GET', "POST"])
 async def preview_image(param: PreviewImageParam):
-    raise render(data={})
+    return render(data={})
 
 
 @r.api_route("/list", methods=['GET', "POST"])
